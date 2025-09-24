@@ -1,22 +1,22 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: rollouts-demo
+  name: rollouts-demo-staging
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "30"
 spec:
   project: default
   source:
-    repoURL: https://github.com/ingcloud-fr/app-rollouts-demo
+    repoURL: REPO_URL
     targetRevision: main
-    path: rollouts-demo # Répertoire de l'app avec kustomization.yaml, les services, les ingress, etc
+    path: rollouts-demo/overlays/staging
   destination:
     server: https://kubernetes.default.svc
-    namespace: rollouts-demo
+    namespace: rollouts-staging
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
-    - CreateNamespace=true    # ← Argo CD créera le namespace
+      - CreateNamespace=true

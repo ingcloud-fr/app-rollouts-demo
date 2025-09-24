@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: rollouts-prod
+resources:
+  - ../../base
+  - ns.yaml
+patchesStrategicMerge:
+  - patch-ingresses.yaml
+  - patch-image.yaml
