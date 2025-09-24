@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rollouts-demo
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "30"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/ingcloud-fr/app-rollouts-demo
+    targetRevision: main
+    path: rollouts-demo # Répertoire de l'app avec kustomization.yaml, les services, les ingress, etc
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: rollouts-demo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

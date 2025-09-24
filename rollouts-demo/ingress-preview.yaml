@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rollouts-preview
+  namespace: rollouts-demo
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: rollouts-demo-preview.ingcloud.site
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rollouts-preview
+                port:
+                  number: 80

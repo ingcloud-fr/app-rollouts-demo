@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: rollouts-demo
+resources:
+  - namespace.yaml
+  - svc-active.yaml
+  - svc-preview.yaml
+  - ingress-active.yaml
+  - ingress-preview.yaml
+  - rollout.yaml
