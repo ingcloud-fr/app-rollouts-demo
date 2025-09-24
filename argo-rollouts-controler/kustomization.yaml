@@ -11,11 +11,6 @@ resources:
   # 2) Manifeste officiel (pinné sur une version précise)
   #    Contient le controller + RBAC + Services + Webhooks + CRDs.
   - https://github.com/argoproj/argo-rollouts/releases/download/v1.8.3/install.yaml
-
-patches:
-  - path: patches/argo-rollouts-ignore-crd-diff-patch.yaml
-    target:
-      group: argoproj.io
-      version: v1alpha1
-      kind: Application
-      name: argo-rollouts
+  
+  # 3) Dashboard UI (Optionnel)
+  - https://github.com/argoproj/argo-rollouts/releases/download/v1.8.3/dashboard-install.yaml
