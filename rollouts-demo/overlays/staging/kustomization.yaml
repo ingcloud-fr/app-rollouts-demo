@@ -4,6 +4,9 @@ namespace: rollouts-staging
 resources:
   - ../../base
   - namespace.yaml
-patchesStrategicMerge:
-  - patch-ingresses.yaml
-  - patch-image.yaml
+patches:
+  - path: patch-ingresses.yaml
+  - path: patch-image.yaml
+
+
+  
