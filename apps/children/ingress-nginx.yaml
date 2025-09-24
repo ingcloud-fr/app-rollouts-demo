@@ -27,5 +27,5 @@ spec:
     automated:
       prune: true
       selfHeal: true
-  syncOptions:
-    - CreateNamespace=true    # ← Argo CD créera le namespace
+    syncOptions:
+      - CreateNamespace=true    # ← Argo CD créera le namespace
