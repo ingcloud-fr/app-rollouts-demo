@@ -4,6 +4,6 @@ namespace: rollouts-prod
 resources:
   - ../../base
   - ns.yaml
-patchesStrategicMerge:
-  - patch-ingresses.yaml
-  - patch-image.yaml
+patches:
+  - path: patch-ingresses.yaml
+  - path: patch-image.yaml
