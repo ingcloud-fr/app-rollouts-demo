@@ -29,4 +29,5 @@ spec:
     syncOptions:
       - CreateNamespace=true 
       - ServerSideApply=true
-      - RespectIgnoreDifferences=true      
+      - RespectIgnoreDifferences=true
+      - Replace=true       
