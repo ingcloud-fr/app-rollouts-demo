@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: rollouts-demo-prod
+  name: myapp
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "30"
@@ -10,10 +10,10 @@ spec:
   source:
     repoURL: https://github.com/ingcloud-fr/app-rollouts-demo
     targetRevision: main
-    path: rollouts-demo/overlays/prod
+    path: myapp/overlays/prod
   destination:
     server: https://kubernetes.default.svc
-    namespace: rollouts-prod
+    namespace: myapp
   syncPolicy:
     automated:
       prune: true

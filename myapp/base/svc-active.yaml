@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: rollouts-active
+  name: svc-active
 spec:
   selector:
-    app: rollouts-demo
+    app: myapp
   ports:
     - name: http
       port: 80

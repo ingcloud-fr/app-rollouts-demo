@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://github.com/ingcloud-fr/app-rollouts-demo
     targetRevision: main
-    path: argo-rollouts
+    path: argo-rollouts-controler
   destination:
     server: https://kubernetes.default.svc
     namespace: argo-rollouts
@@ -19,5 +19,4 @@ spec:
       prune: true
       selfHeal: true
     syncOptions:
-      - CreateNamespace=true          # au cas où, mais on a aussi namespace.yaml
-      #- ServerSideApply=true          # (recommandé) pour les CRDs
+      - CreateNamespace=true 
