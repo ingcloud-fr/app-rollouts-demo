@@ -3,7 +3,7 @@ kind: Kustomization
 namespace: rollouts-prod
 resources:
   - ../../base
-  - ns.yaml
+  - namespace.yaml
 patches:
   - path: patch-ingresses.yaml
   - path: patch-image.yaml
