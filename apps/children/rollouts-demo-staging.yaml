@@ -8,7 +8,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: REPO_URL
+    repoURL: https://github.com/ingcloud-fr/app-rollouts-demo
     targetRevision: main
     path: rollouts-demo/overlays/staging
   destination:
