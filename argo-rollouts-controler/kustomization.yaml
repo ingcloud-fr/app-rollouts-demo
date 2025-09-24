@@ -12,7 +12,10 @@ resources:
   #    Contient le controller + RBAC + Services + Webhooks + CRDs.
   - https://github.com/argoproj/argo-rollouts/releases/download/v1.8.3/install.yaml
 
-# (Optionnel) Exemples de patches si tu veux personnaliser:
-# patchesStrategicMerge:
-#   - patches/replicas.yaml
-#   - patches/metrics-svc.yaml
+patches:
+  - path: patches/argo-rollouts-ignore-crd-diff-patch.yaml
+    target:
+      group: argoproj.io
+      version: v1alpha1
+      kind: Application
+      name: argo-rollouts

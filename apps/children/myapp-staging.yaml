@@ -10,10 +10,10 @@ spec:
   source:
     repoURL: https://github.com/ingcloud-fr/app-rollouts-demo
     targetRevision: main
-    path: rollouts-demo/overlays/staging
+    path: myapp/overlays/staging
   destination:
     server: https://kubernetes.default.svc
-    namespace: app-staging
+    #namespace: app-staging
   syncPolicy:
     automated:
       prune: true

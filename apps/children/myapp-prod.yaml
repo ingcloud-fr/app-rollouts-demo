@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: myapp
+  name: myapp-prod
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "30"
@@ -13,7 +13,7 @@ spec:
     path: myapp/overlays/prod
   destination:
     server: https://kubernetes.default.svc
-    namespace: myapp
+    #namespace: myapp-prod
   syncPolicy:
     automated:
       prune: true
