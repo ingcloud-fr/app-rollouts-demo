@@ -1,0 +1,14 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: project-infra
+  namespace: argocd
+spec:
+  destinations:
+    - namespace: '*'
+      server: https://kubernetes.default.svc
+  sourceRepos:
+    - '*'
+  clusterResourceWhitelist:            # infra peut gérer CRDs/RBAC/IngressClass/Webhooks
+    - group: '*'
+      kind: '*'

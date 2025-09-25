@@ -8,7 +8,7 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io    
 spec:
-  project: default
+  project: project-apps #default
   source:
     repoURL: https://github.com/ingcloud-fr/app-rollouts-demo
     targetRevision: main

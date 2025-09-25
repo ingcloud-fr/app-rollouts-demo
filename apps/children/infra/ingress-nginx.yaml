@@ -9,7 +9,7 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io    
 spec:
-  project: default
+  project: project-infra #default
   source:
     repoURL: https://kubernetes.github.io/ingress-nginx
     chart: ingress-nginx
@@ -31,3 +31,6 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true    # ← Argo CD créera le namespace
+      - PruneLast=true
+      - PrunePropagationPolicy=foreground
+      - Replace=true
