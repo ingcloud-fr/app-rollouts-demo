@@ -3,7 +3,7 @@ kind: Kustomization
 namespace: myapp-bluegreen-staging
 images:
 - name: argoproj/rollouts-demo
-  newTag: yellow
+  newTag: red
 resources:
   - ../../base
   - namespace.yaml # Pour la création
