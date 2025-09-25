@@ -19,15 +19,19 @@ spec:
             - containerPort: 8080
   strategy:
     blueGreen:
+      # Service “actif” : pointe vers la révision en prod (stable). Le trafic utilisateur passe par ce service.
       activeService: svc-active
+      # Service “preview” : pointe vers la nouvelle révision (candidate). Sert aux tests manuels/automatisés sans impacter les users.
       previewService: svc-preview
+      # Pas d’auto-promotion : après déploiement de la candidate, Argo n’effectue PAS le basculement tout seul. Il faut promouvoir manuellement (safe en prod).
       autoPromotionEnabled: false
-      previewReplicaCount: 2            
+      # Taille du ReplicaSet de preview (exécute 2 pods de la candidate). Pratique pour tester la charge/health probes sans surprovisionner.
+      previewReplicaCount: 2
+      # Après promotion (basculement preview -> active), délai d’attente avant d’éteindre l’ancienne révision. Utile pour laisser finir des connexions en cours / drains.          
       scaleDownDelaySeconds: 30
     
 
-# Service “actif” : pointe vers la révision en prod (stable). Le trafic utilisateur passe par CE service.
-# Service “preview” : pointe vers la nouvelle révision (candidate). Sert aux tests manuels/automatisés sans impacter les users.
-# Pas d’auto-promotion : après déploiement de la candidate, Argo n’effectue PAS le basculement tout seul. Il faut promouvoir manuellement (safe en prod).
-# Taille du ReplicaSet de preview (exécute 2 pods de la candidate). Pratique pour tester la charge/health probes sans surprovisionner.
-# Après promotion (basculement preview -> active), délai d’attente avant d’éteindre l’ancienne révision. Utile pour laisser finir des connexions en cours / drains.
+
+
+
+
