@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-active
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: CHANGE-active-app.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: svc-active
+                port:
+                  number: 80

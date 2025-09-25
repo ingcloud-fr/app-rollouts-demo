@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: myapp-rollout
+spec:
+  replicas: 6
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+        - name: app-container
+          image: argoproj/rollouts-demo:red
+          ports:
+            - containerPort: 8080
+  strategy:
+    blueGreen:
+      activeService: svc-active
+      previewService: svc-preview
+      autoPromotionEnabled: false
+      previewReplicaCount: 2
+      scaleDownDelaySeconds: 30
