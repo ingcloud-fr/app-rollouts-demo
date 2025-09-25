@@ -77,14 +77,112 @@ On sync l'appli en staging (ou via la GUI ou on attend 3min) :
 # argocd app sync myapp-bluegreen-staging
 ```
 
+Le controlleur Argo Rollout détecte le changement d'image
 L'application de staging passe en `suspended/paused`
-
-```
-# kubectl argo rollouts list rollouts -n 
-  
-```
-
 L'app en preview est d'une autre couleur : http://staging-myapp-bluegreen-preview.ingcloud.site/
 
+
+On a une stratégie rollout manuelle (cf `myapps/myapp-bluegreen/base/rollout.yaml`) avec `autoPromotionEnabled: false` et 2 replicas pour la preview :
+
+```
+# kubectl argo rollouts get rollout myapp-bluegreen -n myapp-bluegreen-staging
+Name:            myapp-bluegreen
+Namespace:       myapp-bluegreen-staging
+Status:          ॥ Paused
+Message:         BlueGreenPause
+Strategy:        BlueGreen
+Images:          argoproj/rollouts-demo:red (stable, active)
+                 argoproj/rollouts-demo:yellow (preview)
+Replicas:
+  Desired:       6
+  Current:       8
+  Updated:       2
+  Ready:         6
+  Available:     6
+
+NAME                                         KIND        STATUS     AGE    INFO
+⟳ myapp-bluegreen                            Rollout     ॥ Paused   38m    
+├──# revision:2                                                            
+│  └──⧉ myapp-bluegreen-7d7db49cf4           ReplicaSet  ✔ Healthy  4m55s  preview
+│     ├──□ myapp-bluegreen-7d7db49cf4-6fds4  Pod         ✔ Running  4m55s  ready:1/1
+│     └──□ myapp-bluegreen-7d7db49cf4-8rxwx  Pod         ✔ Running  4m55s  ready:1/1
+└──# revision:1                                                            
+   └──⧉ myapp-bluegreen-58cbc6f97            ReplicaSet  ✔ Healthy  38m    stable,active
+      ├──□ myapp-bluegreen-58cbc6f97-26rlc   Pod         ✔ Running  37m    ready:1/1
+      ├──□ myapp-bluegreen-58cbc6f97-95f4p   Pod         ✔ Running  37m    ready:1/1
+      ├──□ myapp-bluegreen-58cbc6f97-9jr7r   Pod         ✔ Running  37m    ready:1/1
+      ├──□ myapp-bluegreen-58cbc6f97-cc64g   Pod         ✔ Running  37m    ready:1/1
+      ├──□ myapp-bluegreen-58cbc6f97-hnf9x   Pod         ✔ Running  37m    ready:1/1
+      └──□ myapp-bluegreen-58cbc6f97-vv868   Pod         ✔ Running  37m    ready:1/1
+```
+
+#### Promouvoir le preview :
+
+
+```
+# kubectl argo rollouts promote myapp-bluegreen -n myapp-bluegreen-staging
+rollout 'myapp-bluegreen' promoted
+```
+
+
+
+Au bout de 30 sec :
+
+```
+# kubectl argo rollouts get rollout myapp-bluegreen -n myapp-bluegreen-staging
+Name:            myapp-bluegreen
+Namespace:       myapp-bluegreen-staging
+Status:          ✔ Healthy
+Strategy:        BlueGreen
+Images:          argoproj/rollouts-demo:yellow (stable, active)
+Replicas:
+  Desired:       6
+  Current:       6
+  Updated:       6
+  Ready:         6
+  Available:     6
+
+NAME                                         KIND        STATUS        AGE  INFO
+⟳ myapp-bluegreen                            Rollout     ✔ Healthy     44m  
+├──# revision:2                                                             
+│  └──⧉ myapp-bluegreen-7d7db49cf4           ReplicaSet  ✔ Healthy     10m  stable,active
+│     ├──□ myapp-bluegreen-7d7db49cf4-6fds4  Pod         ✔ Running     10m  ready:1/1
+│     ├──□ myapp-bluegreen-7d7db49cf4-8rxwx  Pod         ✔ Running     10m  ready:1/1
+│     ├──□ myapp-bluegreen-7d7db49cf4-9brzv  Pod         ✔ Running     44s  ready:1/1
+│     ├──□ myapp-bluegreen-7d7db49cf4-hhvdc  Pod         ✔ Running     44s  ready:1/1
+│     ├──□ myapp-bluegreen-7d7db49cf4-p2l4n  Pod         ✔ Running     44s  ready:1/1
+│     └──□ myapp-bluegreen-7d7db49cf4-rm5zs  Pod         ✔ Running     44s  ready:1/1
+└──# revision:1                                                             
+   └──⧉ myapp-bluegreen-58cbc6f97            ReplicaSet  • ScaledDown  43m 
+```
+
+Le service active et preview sont de la même couleur maintenant.
+
+#### Revenir en arrière
+
+Pour ne pas promouvoir la preview :
+
+```
+kubectl argo rollouts abort <ROLLOUT_NAME> -n <ns>
+
+```
+Si on s'apercoit qu'il y a une erreur (après la promotion) pour revenir en arrière :
+
+```
+kubectl argo rollouts undo <ROLLOUT_NAME> -n <ns>
+```
+
+Attention: on se retrouve en drift avec la verison Git et l’auto-sync/selfHeal, Argo CD va réappliquer ce qu’il y a dans Git et “annuler l'annulation”
+
+Il vaut mieux modifier l'image dans Git + COMMIT + PUSH + APP SYNC
+
+* Note On peut faire du Writeback git avec image-updater.
+
+#### Tester le blue-green en prod
+
+Idem staging
+
+
+### Tester le canary en staging
 
 
