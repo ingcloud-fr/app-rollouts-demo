@@ -16,7 +16,7 @@ patches:
     patch: |-
       - op: replace
         path: /spec/rules/0/host
-        value: myapp.ingcloud.site
+        value: myapp-bluegreen.ingcloud.site
   - target:
       group: networking.k8s.io
       version: v1
@@ -25,5 +25,5 @@ patches:
     patch: |-
       - op: replace
         path: /spec/rules/0/host
-        value: myapp-preview.ingcloud.site
+        value: myapp-bluegreen-preview.ingcloud.site
 
