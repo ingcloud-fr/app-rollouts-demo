@@ -17,13 +17,13 @@ spec:
           image: argoproj/rollouts-demo:red
           ports:
             - containerPort: 8080
-strategy:
-  blueGreen:
-    activeService: svc-active
-    previewService: svc-preview
-    autoPromotionEnabled: false
-    previewReplicaCount: 2            
-    scaleDownDelaySeconds: 30
+  strategy:
+    blueGreen:
+      activeService: svc-active
+      previewService: svc-preview
+      autoPromotionEnabled: false
+      previewReplicaCount: 2            
+      scaleDownDelaySeconds: 30
     
 
 # Service “actif” : pointe vers la révision en prod (stable). Le trafic utilisateur passe par CE service.
