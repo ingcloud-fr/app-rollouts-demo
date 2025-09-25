@@ -1,1 +1,29 @@
 # app-rollouts-demo
+
+## Lancement
+
+```
+# kubectl apply -f apps/root-apps.yaml
+```
+
+### Tests
+
+```
+# k -n ingress-nginx get svc
+NAME                                 TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)                      AGE
+ingress-nginx-controller             LoadBalancer   10.233.63.232   195.15.196.89   80:30643/TCP,443:30856/TCP   88s
+ingress-nginx-controller-admission   ClusterIP      10.233.53.197   <none>          443/TCP                      88s
+
+# k get ingress -A
+NAMESPACE                 NAME              CLASS   HOSTS                                           ADDRESS         PORTS   AGE
+myapp-blue-green-prod     ingress-active    nginx   myapp-bluegreen.ingcloud.site                   195.15.196.89   80      2m30s
+myapp-blue-green-prod     ingress-preview   nginx   myapp-bluegreen-preview.ingcloud.site           195.15.196.89   80      2m30s
+myapp-bluegreen-staging   ingress-active    nginx   staging-myapp-bluegreen.ingcloud.site           195.15.196.89   80      2m30s
+myapp-bluegreen-staging   ingress-preview   nginx   staging-myapp-bluegreen-preview.ingcloud.site   195.15.196.89   80      2m30s
+```
+
+* Faire les résolutions DNS
+
+
+On modifie l'image myapp-bluegreen-staging dans `myapps/myapp-bluegreen/overlays/staging/kustomization.yaml`
+
