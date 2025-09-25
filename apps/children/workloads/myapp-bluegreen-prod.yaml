@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: https://github.com/ingcloud-fr/app-rollouts-demo
     targetRevision: main
-    path: myapp/overlays/prod
+    path: myapps/myapp-bluegreen/overlays/prod
   destination:
     server: https://kubernetes.default.svc
     #namespace: myapp-prod

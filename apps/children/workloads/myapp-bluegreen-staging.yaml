@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: https://github.com/ingcloud-fr/app-rollouts-demo
     targetRevision: main
-    path: myapp/overlays/staging
+    path: myapps/myapp-bluegreen/overlays/staging
   destination:
     server: https://kubernetes.default.svc
     #namespace: app-staging
