@@ -19,16 +19,9 @@ spec:
             - containerPort: 8080
 strategy:
   blueGreen:
-    activeService: svc-active        # Service “actif” : pointe vers la révision en prod (stable). 
-                                     # Le trafic utilisateur passe par CE service.
-    previewService: svc-preview      # Service “preview” : pointe vers la nouvelle révision (candidate).
-                                     # Sert aux tests manuels/automatisés sans impacter les users.
-    autoPromotionEnabled: false      # Pas d’auto-promotion : après déploiement de la candidate,
-                                     # Argo n’effectue PAS le basculement tout seul.
-                                     # Tu devras promouvoir manuellement (safe en prod).
-    previewReplicaCount: 2           # Taille du ReplicaSet de preview (exécute 2 pods de la candidate).
-                                     # Pratique pour tester la charge/health probes sans surprovisionner.
-    scaleDownDelaySeconds: 30        # Après promotion (basculement preview -> active),
-                                     # délai d’attente avant d’éteindre l’ancienne révision.
-                                     # Utile pour laisser finir des connexions en cours / drains.
+    activeService: svc-active        # Service “actif” : pointe vers la révision en prod (stable). Le trafic utilisateur passe par CE service.
+    previewService: svc-preview      # Service “preview” : pointe vers la nouvelle révision (candidate). Sert aux tests manuels/automatisés sans impacter les users.
+    autoPromotionEnabled: false      # Pas d’auto-promotion : après déploiement de la candidate, Argo n’effectue PAS le basculement tout seul. Il faut promouvoir manuellement (safe en prod).
+    previewReplicaCount: 2           # Taille du ReplicaSet de preview (exécute 2 pods de la candidate). Pratique pour tester la charge/health probes sans surprovisionner.
+    scaleDownDelaySeconds: 30        # Après promotion (basculement preview -> active), délai d’attente avant d’éteindre l’ancienne révision. Utile pour laisser finir des connexions en cours / drains.
 
