@@ -231,5 +231,111 @@ Si on va sur http://staging-myapp-canary.ingcloud.site est est à 100% d'une cou
 
 On change l'image dans `myapps/myapp-canary/overlays/staging/kustomization.yaml` (dans `image.newTag`)
 
+On peut voir :
 
+```
+# kubectl get app -A
+NAMESPACE   NAME                      SYNC STATUS   HEALTH STATUS
+...
+argocd      myapp-canary-staging      Synced        Suspended
+```
+
+On peut voir :
+
+```
+# kubectl argo rollouts get rollout myapp-canary -n myapp-canary-staging
+Name:            myapp-canary
+Namespace:       myapp-canary-staging
+Status:          ॥ Paused
+Message:         CanaryPauseStep
+Strategy:        Canary
+  Step:          1/7         <--- ICI 1ier étape sur 7 (setWeight et pauses)
+  SetWeight:     10          <--- 1ier setWeight
+  ActualWeight:  10
+Images:          argoproj/rollouts-demo:blue (stable)
+                 argoproj/rollouts-demo:green (canary)
+Replicas:
+  Desired:       6
+  Current:       7
+  Updated:       1
+  Ready:         7
+  Available:     7
+
+NAME                                      KIND        STATUS     AGE    INFO
+⟳ myapp-canary                            Rollout     ॥ Paused   42m    
+├──# revision:2                                                         
+│  └──⧉ myapp-canary-744ddfc74d           ReplicaSet  ✔ Healthy  2m16s  canary
+│     └──□ myapp-canary-744ddfc74d-5bs2q  Pod         ✔ Running  2m15s  ready:1/1
+└──# revision:1                                                         
+   └──⧉ myapp-canary-6bb996f685           ReplicaSet  ✔ Healthy  42m    stable
+      ├──□ myapp-canary-6bb996f685-25dw7  Pod         ✔ Running  42m    ready:1/1
+      ├──□ myapp-canary-6bb996f685-4vgbm  Pod         ✔ Running  42m    ready:1/1
+      ├──□ myapp-canary-6bb996f685-6ljtz  Pod         ✔ Running  42m    ready:1/1
+      ├──□ myapp-canary-6bb996f685-cnfqd  Pod         ✔ Running  42m    ready:1/1
+      ├──□ myapp-canary-6bb996f685-mslwx  Pod         ✔ Running  42m    ready:1/1
+      └──□ myapp-canary-6bb996f685-npnhs  Pod         ✔ Running  42m    ready:1/1
+```
+
+L'annotation de l'ingress canary :
+
+```
+# kubectl -n myapp-canary-staging describe ing myapp-canary-ingress-stable-canary
+...
+Annotations:                          nginx.ingress.kubernetes.io/canary: true
+                                      nginx.ingress.kubernetes.io/canary-weight: 10
+```
+
+
+Si on regarde http://staging-myapp-canary.ingcloud.site/, il y a 2 couleurs : beaucoup de la 1ier, un peu de l'autre.
+
+
+On valide cette 1ier étape :
+
+```
+# kubectl argo rollouts promote myapp-canary -n myapp-canary-staging
+```
+
+Notes :
+* Promouvoir directement à 100% : `kubectl argo rollouts promote myapp-canary -n myapp-canary-staging --full`
+* Annuler le déploiement en cours (rester sur la stable): `kubectl argo rollouts abort myapp-canary -n myapp-canary-staging`
+* Annuler si déjà promu (retour arrière): `kubectl argo rollouts undo myapp-canary -n myapp-canary-staging`
+
+On peut suivre le déploiement (les autres étapes sont en auto) :
+
+```
+# kubectl argo rollouts get rollout myapp-canary -n myapp-canary-staging -w
+```
+
+Si on regarde http://staging-myapp-canary.ingcloud.site/, il y a 2 couleurs : de moins en moins de la 1ier, de plus en plus de l'autre. Jusqu'à atteindre 100%.
+
+```
+# kubectl argo rollouts get rollout myapp-canary -n myapp-canary-staging
+Name:            myapp-canary
+Namespace:       myapp-canary-staging
+Status:          ✔ Healthy
+Strategy:        Canary
+  Step:          7/7
+  SetWeight:     100
+  ActualWeight:  100
+Images:          argoproj/rollouts-demo:green (stable)
+Replicas:
+  Desired:       6
+  Current:       6
+  Updated:       6
+  Ready:         6
+  Available:     6
+
+NAME                                      KIND        STATUS        AGE    INFO
+⟳ myapp-canary                            Rollout     ✔ Healthy     56m    
+├──# revision:2                                                            
+│  └──⧉ myapp-canary-744ddfc74d           ReplicaSet  ✔ Healthy     15m    stable
+│     ├──□ myapp-canary-744ddfc74d-5bs2q  Pod         ✔ Running     15m    ready:1/1
+│     ├──□ myapp-canary-744ddfc74d-bjf8j  Pod         ✔ Running     4m57s  ready:1/1
+│     ├──□ myapp-canary-744ddfc74d-59t4z  Pod         ✔ Running     3m54s  ready:1/1
+│     ├──□ myapp-canary-744ddfc74d-j7nh6  Pod         ✔ Running     3m54s  ready:1/1
+│     ├──□ myapp-canary-744ddfc74d-55gff  Pod         ✔ Running     113s   ready:1/1
+│     └──□ myapp-canary-744ddfc74d-x7ztv  Pod         ✔ Running     113s   ready:1/1
+└──# revision:1                                                            
+   └──⧉ myapp-canary-6bb996f685           ReplicaSet  • ScaledDown  56m  
+```  
 
