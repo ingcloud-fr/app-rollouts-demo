@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: https://github.com/ingcloud-fr/app-rollouts-demo
     targetRevision: main
-    path: myapps/myapp-canary/overlays/staging
+    path: myapps/myapp-canary/overlays/prod
   destination:
     server: https://kubernetes.default.svc
   syncPolicy:
