@@ -1,5 +1,14 @@
 # app-rollouts-demo
 
+## Installation 
+
+### Argocd
+
+
+## Argo CLI
+
+## Rollouts CLI
+
 ## Lancement
 
 ```
@@ -24,6 +33,27 @@ myapp-bluegreen-staging   ingress-preview   nginx   staging-myapp-bluegreen-prev
 
 * Faire les résolutions DNS
 
+Pour voir les rollouts :
 
-On modifie l'image myapp-bluegreen-staging dans `myapps/myapp-bluegreen/overlays/staging/kustomization.yaml`
+```
+# kubectl argo rollouts list rollouts -A
+ 
+```
+
+### Tester le blue green en staging
+
+On modifie l'image myapp-bluegreen-staging dans `myapps/myapp-bluegreen/overlays/staging/kustomization.yaml` + COMMIT + PUSH
+
+On sync l'appli (ou on attend 3min)
+
+```
+# argocd app sync myapp-bluegreen-staging
+```
+
+L'application de staging passe en `suspended/paused`
+
+```
+# kubectl argo rollouts list rollouts -n 
+  
+```
 
