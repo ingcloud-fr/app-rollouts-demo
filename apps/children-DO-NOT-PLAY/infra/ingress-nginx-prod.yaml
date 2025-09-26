@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: ingress-nginx-staging
+  name: ingress-nginx-prod
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "10"
@@ -18,17 +18,22 @@ spec:
       values: |
         controller:
           ingressClassResource:
-            enabled: true
-            name: nginx-staging
-            controllerValue: "k8s.io/ingress-nginx-staging"
-          ingressClass: nginx-staging
+            name: nginx-prod
+            controllerValue: "k8s.io/ingress-nginx"
+          ingressClass: nginx-prod
           ingressClassByName: true
           watchIngressWithoutClass: false
+          publishService:
+            enabled: true
+            pathOverride: "ingress-nginx-prod/ingress-nginx-prod-controller"
+          electionID: ingress-controller-leader-nginx-prod
+          extraArgs:
+            watch-namespace-selector: "env=prod"
           service:
             type: LoadBalancer
   destination:
     server: https://kubernetes.default.svc
-    namespace: ingress-nginx-staging
+    namespace: ingress-nginx-prod
   syncPolicy:
     automated:
       prune: true
