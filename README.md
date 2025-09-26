@@ -367,8 +367,8 @@ myapp-blue-green-prod     ingress-active                       nginx-prod      m
 myapp-blue-green-prod     ingress-preview                      nginx-prod      myapp-bluegreen-preview.k8s.ingcloud.site           195.15.197.215   80      5m42s
 myapp-bluegreen-staging   ingress-active                       nginx-staging   staging-myapp-bluegreen.k8s.ingcloud.site           195.15.199.45    80      5m43s
 myapp-bluegreen-staging   ingress-preview                      nginx-staging   staging-myapp-bluegreen-preview.k8s.ingcloud.site   195.15.199.45    80      5m43s
-myapp-canary-prod         ingress-stable                       nginx-prod      myapp-canary.k8s.ngcloud.site                       195.15.197.215   80      5m42s
-myapp-canary-prod         myapp-canary-ingress-stable-canary   nginx-prod      myapp-canary.k8s.ngcloud.site                       195.15.197.215   80      3m10s
+myapp-canary-prod         ingress-stable                       nginx-prod      myapp-canary.k8s.ingcloud.site                      195.15.197.215   80      5m42s
+myapp-canary-prod         myapp-canary-ingress-stable-canary   nginx-prod      myapp-canary.k8s.ingcloud.site                      195.15.197.215   80      3m10s
 myapp-canary-staging      ingress-stable                       nginx-staging   staging-myapp-canary.k8s.ingcloud.site              195.15.199.45    80      5m42s
 myapp-canary-staging      myapp-canary-ingress-stable-canary   nginx-staging   staging-myapp-canary.k8s.ingcloud.site              195.15.199.45    80      3m12s
 

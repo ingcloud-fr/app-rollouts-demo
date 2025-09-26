@@ -3,7 +3,7 @@ kind: Kustomization
 namespace: myapp-canary-prod
 images:
 - name: argoproj/rollouts-demo
-  newTag: green
+  newTag: yellow
 resources:
   - ../../base
   - namespace.yaml # Pour la création
