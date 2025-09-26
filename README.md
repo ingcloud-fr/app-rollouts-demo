@@ -546,6 +546,9 @@ Idem staging avec urls :
 * http://myapp-bluegreen.k8s.ingcloud.site/
 * http://staging-myapp-bluegreen.ingcloud.site/
 * Modif de `myapps/myapp-bluegreen/overlays/prod/kustomization.yaml` (`image.newTag`)
+* `# argocd app sync myapp-bluegreen-prod`
+* Voir le rollout : `# kubectl argo rollouts get rollout myapp-bluegreen -n myapp-bluegreen-prod`
+* `# kubectl argo rollouts promote myapp-bluegreen -n myapp-bluegreen-prod`
 
 
 
