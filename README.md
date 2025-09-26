@@ -654,13 +654,14 @@ Annotations:                          nginx.ingress.kubernetes.io/canary: true
 ```
 
 
-Si on regarde http://staging-myapp-canary.ingcloud.site/, il y a 2 couleurs : beaucoup de la 1ier, un peu de l'autre.
+Si on regarde http://staging-myapp-canary.k8s.ingcloud.site/, il y a 2 couleurs : beaucoup de la 1ier, un peu de l'autre.
 
 
 On valide cette 1ier étape :
 
 ```
 # kubectl argo rollouts promote myapp-canary -n myapp-canary-staging
+rollout 'myapp-canary' promoted
 ```
 
 Notes :

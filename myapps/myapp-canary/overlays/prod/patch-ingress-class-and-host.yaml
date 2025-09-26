@@ -1,6 +1,6 @@
 - op: replace
   path: /spec/rules/0/host
-  value: myapp-canary.k8s.ngcloud.site
+  value: myapp-canary.k8s.ingcloud.site
 - op: replace
   path: /spec/ingressClassName
   value: nginx-prod
