@@ -101,14 +101,246 @@ Lancer le **dashboard** via le plugin (sans Helm) :
 kubectl argo rollouts dashboard -n argo-rollouts
 ```
 
+## External DNS (openstack designate)
 
-## Lancement
+### Creation des zones
+
+* Installer le client openstack dns designate
+
+```
+$ sudo apt install python3-designate
+```
+
+* Note : on a aussi `python3-openstackclient` et `python3-octavia` d'installés
+
+* Créer une zone k8s.ingcloud.site avec la GUI ou en ligne de commande (ne pas oublier le . à la fin du domaine):
+
+```
+$ openstack zone create --email hostmaster@ingcloud.site k8s.ingcloud.site.
++----------------+--------------------------------------+
+| Field          | Value                                |
++----------------+--------------------------------------+
+| action         | CREATE                               |
+| attributes     |                                      |
+| created_at     | 2025-09-26T16:42:10.000000           |
+| description    | None                                 |
+| email          | hostmaster@ingcloud.site             |
+| id             | e87f68a9-1bf6-4edc-8fab-a5a64637a715 |
+| masters        |                                      |
+| name           | k8s.ingcloud.site.                  |
+| pool_id        | 794ccc2c-d751-44fe-b57f-8894c9f5c842 |
+| project_id     | da72895b87e24bbf82133eee25908b39     |
+| serial         | 1758904930                           |
+| status         | PENDING                              |
+| transferred_at | None                                 |
+| ttl            | 3600                                 |
+| type           | PRIMARY                              |
+| updated_at     | None                                 |
+| version        | 1                                    |
++----------------+--------------------------------------+
+
+```
+
+On récupère le NS de la zone créée :
+
+```
+$ openstack recordset list k8s.ingcloud.site.
++-------------------------------+-------------------------------+------+---------------------------------+--------+--------+
+| id                            | name                          | type | records                         | status | action |
++-------------------------------+-------------------------------+------+---------------------------------+--------+--------+
+| 20fa89e3-7c6a-4267-b72a-      | k8s.ingcloud.site.            | NS   | ns1.pub1.infomaniak.cloud.      | ACTIVE | NONE   |
+| 33bd02025e00                  |                               |      | ns2.pub1.infomaniak.cloud.      |        |        |
+| b56d28c7-d80d-4d39-b4bf-      | k8s.ingcloud.site.            | SOA  | ns2.pub1.infomaniak.cloud.      | ACTIVE | NONE   |
++-------------------------------+-------------------------------+------+---------------------------------+--------+--------+
+```
+
+Sur le registar du domaine **ingcloud.site**, faire un nouveau enregistrement de type **NS** `k8s.ingcloud.site vers` `ns1.pub1.infomaniak.cloud.` et `ns2.pub1.infomaniak.cloud.`
+
+### External-DNS
+
+* Doc: https://kubernetes-sigs.github.io/external-dns/v0.15.1/docs/tutorials/designate/
+
+On crée le ns external-dns 
+
+```
+# kubectl create ns external-dns
+```
+
+On crée le secret (cf openrc.sh pour les valeurs) dans le ns external-dns :
+
+```
+# kubectl -n external-dns create secret generic os-openrc  \ 
+    --from-literal=OS_AUTH_URL='https://api.pub1.infomaniak.cloud/identity/v3' \
+    --from-literal=OS_REGION_NAME='dc3-a' \
+    --from-literal=OS_USERNAME='PCU-xxxxx' \
+    --from-literal=OS_PASSWORD='xxxxxxx' \ 
+    --from-literal=OS_PROJECT_NAME='PCP-xxxxx' \
+    --from-literal=OS_PROJECT_ID='xxxxxx' \
+    --from-literal=OS_USER_DOMAIN_NAME='default' \
+    --from-literal=OS_PROJECT_DOMAIN_NAME='default' \
+    --dry-run=client -o yaml | kubectl apply -f -
+```
+
+ou (mais ne pas commiter) :
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: os-openrc
+  namespace: external-dns
+type: Opaque
+stringData:
+  OS_AUTH_URL: "https://api.pub1.infomaniak.cloud/identity/v3"
+  OS_REGION_NAME: "dc3-a"
+  OS_USERNAME: "PCU-xxxx"
+  OS_PASSWORD: "<ton_mot_de_passe>"
+  OS_PROJECT_NAME: "PCP-xxxx"
+  OS_PROJECT_ID: "xxxxxxx"
+  OS_USER_DOMAIN_NAME: "default"
+  OS_PROJECT_DOMAIN_NAME: "default"`
+```
+
+Le fichier `external-dns.yaml`:
+
+```yaml
+# external-dns.yaml 
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: external-dns
+  namespace: external-dns
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: external-dns
+rules:
+- apiGroups: [""]
+  resources: ["services","endpoints","pods"]
+  verbs: ["get","watch","list"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get","watch","list"]
+- apiGroups: ["extensions","networking.k8s.io"]
+  resources: ["ingresses"] 
+  verbs: ["get","watch","list"]
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["watch","list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: external-dns-viewer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: external-dns
+subjects:
+- kind: ServiceAccount
+  name: external-dns
+  namespace: external-dns
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: external-dns
+  namespace: external-dns
+spec:
+  selector:
+    matchLabels:
+      app: external-dns
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: external-dns
+    spec:
+      serviceAccountName: external-dns
+      containers:
+      - name: external-dns
+        image: registry.k8s.io/external-dns/external-dns:v0.16.1 # dernière version avec provider designate (v0.17+ passer avec provider webhook+webhook Designate)
+        args:
+        - --source=ingress # service is also possible
+        - --domain-filter=k8s.ingcloud.site # (optional) limit to only example.com domains; change to match the zone created above.
+        - --provider=designate
+        - --registry=txt # Active le “registre” TXT : ExternalDNS crée/maintient un TXT par nom géré pour enregistrer l’ownership
+        - --txt-prefix=_extdns. # les TXT seront créés sur _extdns.xxxx.xx
+        - --policy=sync # crée, met à jour et supprime pour coller à l’état K8s (autre "upsert-only")
+        - --txt-owner-id=c1-k8s # C'est le cluster k8s c1 qui est owner (utile si plusieurs clusters)
+        env:
+          - name: OS_AUTH_URL
+            valueFrom:
+             secretKeyRef:
+               name: os-openrc
+               key: OS_AUTH_URL
+          - name: OS_REGION_NAME
+            valueFrom:
+              secretKeyRef:
+                name: os-openrc
+                key: OS_REGION_NAME
+          - name: OS_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: os-openrc
+                key: OS_USERNAME
+          - name: OS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: os-openrc
+                key: OS_PASSWORD
+          - name: OS_PROJECT_NAME
+            valueFrom:
+              secretKeyRef:
+                name: os-openrc
+                key: OS_PROJECT_NAME
+          - name: OS_PROJECT_ID
+            valueFrom:
+              secretKeyRef:
+                name: os-openrc
+                key: OS_PROJECT_ID
+          - name: OS_USER_DOMAIN_NAME
+            valueFrom:
+              secretKeyRef:
+                name: os-openrc
+                key: OS_USER_DOMAIN_NAME
+          - name: OS_PROJECT_DOMAIN_NAME
+            valueFrom:
+              secretKeyRef:
+                name: os-openrc
+                key: OS_PROJECT_DOMAIN_NAME
+```
+
+```
+# k apply -f external-dns.yaml 
+namespace/external-dns configured
+serviceaccount/external-dns created
+clusterrole.rbac.authorization.k8s.io/external-dns created
+clusterrolebinding.rbac.authorization.k8s.io/external-dns-viewer created
+deployment.apps/external-dns created
+
+```
+
+```
+# kubectl logs deploy/external-dns -f
+...
+time="2025-09-26T17:09:20Z" level=info msg="Instantiating new Kubernetes client"
+time="2025-09-26T17:09:20Z" level=info msg="Using inCluster-config based on serviceaccount-token"
+time="2025-09-26T17:09:20Z" level=info msg="Created Kubernetes client https://10.233.0.1:443"
+time="2025-09-26T17:09:20Z" level=info msg="Using OpenStack Keystone at https://api.pub1.infomaniak.cloud/identity/v3/"
+time="2025-09-26T17:09:21Z" level=info msg="Found OpenStack Designate service at https://api.pub1.infomaniak.cloud/dns/"
+time="2025-09-26T17:09:21Z" level=info msg="All records are already up to date"
+```
+
+## Lancement de l'app-root
 
 ```
 # kubectl apply -f apps/root-apps.yaml
 ```
 
-### Tests Ingess
+### Tests Ingress
 
 ```
 # k get ingressclasses
@@ -117,28 +349,53 @@ nginx-prod      k8s.io/ingress-nginx            <none>       3m38s
 nginx-staging   k8s.io/ingress-nginx            <none>       3m38s
 
 
-# k get svc -n ingress-nginx-prod 
+# k -n ingress-nginx-prod get svc
 NAME                                      TYPE           CLUSTER-IP     EXTERNAL-IP      PORT(S)                      AGE
-ingress-nginx-prod-controller             LoadBalancer   10.233.59.32   195.15.196.151   80:31193/TCP,443:31451/TCP   5m24s
-ingress-nginx-prod-controller-admission   ClusterIP      10.233.10.5    <none>           443/TCP                      5m24s
+ingress-nginx-prod-controller             LoadBalancer   10.233.32.92   195.15.197.215   80:30717/TCP,443:30783/TCP   4m28s
+ingress-nginx-prod-controller-admission   ClusterIP      10.233.44.92   <none>           443/TCP                      4m28s
 
-# k get svc -n ingress-nginx-staging 
-NAME                                         TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)                      AGE
-ingress-nginx-staging-controller             LoadBalancer   10.233.9.103    195.15.197.215   80:30277/TCP,443:31486/TCP   5m33s
-ingress-nginx-staging-controller-admission   ClusterIP      10.233.44.113   <none>           443/TCP                      5m33s
+# k -n ingress-nginx-staging get svc
+NAME                                         TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)                      AGE
+ingress-nginx-staging-controller             LoadBalancer   10.233.41.54    195.15.199.45   80:32017/TCP,443:31436/TCP   4m51s
+ingress-nginx-staging-controller-admission   ClusterIP      10.233.37.222   <none>          443/TCP                      4m51s
+
 
 
 # k get ingress -A
-NAMESPACE                 NAME              CLASS   HOSTS                                           ADDRESS         PORTS   AGE
-myapp-blue-green-prod     ingress-active    nginx   myapp-bluegreen.ingcloud.site                   195.15.196.89   80      2m30s
-myapp-blue-green-prod     ingress-preview   nginx   myapp-bluegreen-preview.ingcloud.site           195.15.196.89   80      2m30s
-myapp-bluegreen-staging   ingress-active    nginx   staging-myapp-bluegreen.ingcloud.site           195.15.196.89   80      2m30s
-myapp-bluegreen-staging   ingress-preview   nginx   staging-myapp-bluegreen-preview.ingcloud.site   195.15.196.89   80      2m30s
+NAMESPACE                 NAME                                 CLASS           HOSTS                                               ADDRESS          PORTS   AGE
+myapp-blue-green-prod     ingress-active                       nginx-prod      myapp-bluegreen.k8s.ingcloud.site                   195.15.197.215   80      5m42s
+myapp-blue-green-prod     ingress-preview                      nginx-prod      myapp-bluegreen-preview.k8s.ingcloud.site           195.15.197.215   80      5m42s
+myapp-bluegreen-staging   ingress-active                       nginx-staging   staging-myapp-bluegreen.k8s.ingcloud.site           195.15.199.45    80      5m43s
+myapp-bluegreen-staging   ingress-preview                      nginx-staging   staging-myapp-bluegreen-preview.k8s.ingcloud.site   195.15.199.45    80      5m43s
+myapp-canary-prod         ingress-stable                       nginx-prod      myapp-canary.k8s.ngcloud.site                       195.15.197.215   80      5m42s
+myapp-canary-prod         myapp-canary-ingress-stable-canary   nginx-prod      myapp-canary.k8s.ngcloud.site                       195.15.197.215   80      3m10s
+myapp-canary-staging      ingress-stable                       nginx-staging   staging-myapp-canary.k8s.ingcloud.site              195.15.199.45    80      5m42s
+myapp-canary-staging      myapp-canary-ingress-stable-canary   nginx-staging   staging-myapp-canary.k8s.ingcloud.site              195.15.199.45    80      3m12s
+
 ```
 
-Faire les résolutions DNS :
-* vip1 in A 195.15.196.89
-* les domaines myapp-bluegreen.ingcloud.site, etc in CNAME vip1
+Vérifier les logs d'external-dns :
+
+```
+# kubectl logs deploy/external-dns -f
+...
+time="2025-09-26T16:23:28Z" level=info msg="Creating records: staging-myapp-bluegreen.k8s.ingcloud.site./A: 195.15.199.45"
+time="2025-09-26T16:23:28Z" level=info msg="Creating records: _extdns.staging-myapp-bluegreen.k8s.ingcloud.site./TXT: \"heritage=external-dns,external-dns/owner=c1-k8s,external-dns/resource=ingress/myapp-bluegreen-staging/ingress-active\""
+time="2025-09-26T16:23:28Z" level=info msg="Creating records: _extdns.a-staging-myapp-bluegreen.k8s.ingcloud.site./TXT: \"heritage=external-dns,external-dns/owner=c1-k8s,external-dns/resource=ingress/myapp-bluegreen-staging/ingress-active\""
+time="2025-09-26T16:23:28Z" level=info msg="Creating records: _extdns.staging-myapp-bluegreen-preview.k8s.ingcloud.site./TXT: \"heritage=external-dns,external-dns/owner=c1-k8s,external-dns/resource=ingress/myapp-bluegreen-staging/ingress-preview\""
+time="2025-09-26T16:23:28Z" level=info msg="Creating records: staging-myapp-bluegreen-preview.k8s.ingcloud.site./A: 195.15.199.45"
+time="2025-09-26T16:23:29Z" level=info msg="Creating records: staging-myapp-canary.k8s.ingcloud.site./A: 195.15.199.45"
+time="2025-09-26T16:23:29Z" level=info msg="Creating records: _extdns.staging-myapp-canary.k8s.ingcloud.site./TXT: \"heritage=external-dns,external-dns/owner=c1-k8s,external-dns/resource=ingress/myapp-canary-staging/ingress-stable\""
+time="2025-09-26T16:24:29Z" level=info msg="Creating records: myapp-bluegreen.k8s.ingcloud.site./A: 195.15.197.215"
+time="2025-09-26T16:24:29Z" level=info msg="Creating records: myapp-bluegreen-preview.k8s.ingcloud.site./A: 195.15.197.215"
+time="2025-09-26T16:25:30Z" level=info msg="All records are already up to date"
+...
+```
+
+Dans l'interface Horizon > DNS , on peut voir la zone k8s.ingloud.site et ses enregistrements
+
+* Note il n'y a que 5 enregistrements car certains sont en double.
+
 
 Pour voir les applications :
 
@@ -164,15 +421,17 @@ Pour voir les rollouts :
 # kubectl argo rollouts list rollouts -A
 NAMESPACE                NAME             STRATEGY   STATUS        STEP  SET-WEIGHT  READY  DESIRED  UP-TO-DATE  AVAILABLE
 myapp-blue-green-prod    myapp-bluegreen  BlueGreen  Healthy       -     -           6/6    6        6           6        
-myapp-bluegreen-staging  myapp-bluegreen  BlueGreen  Healthy       -     -           6/6    6        6           6   
+myapp-bluegreen-staging  myapp-bluegreen  BlueGreen  Healthy       -     -           6/6    6        6           6        
+myapp-canary-prod        myapp-canary     Canary     Healthy       7/7   100         6/6    6        6           6        
+myapp-canary-staging     myapp-canary     Canary     Healthy       7/7   100         6/6    6        6           6 
 ...
 ```
 
 ### Tester le blue-green en staging
 
 Les 2 sites (active et preview) sont de la même couleur :
-* http://staging-myapp-bluegreen.ingcloud.site/
-* http://staging-myapp-bluegreen-preview.ingcloud.site/
+* http://staging-myapp-bluegreen.k8s.ingcloud.site/
+* http://staging-myapp-bluegreen-preview.k8s.ingcloud.site/
 
 On modifie l'image myapp-bluegreen-staging dans `myapps/myapp-bluegreen/overlays/staging/kustomization.yaml` (`images.newTag`) + COMMIT + PUSH
 
