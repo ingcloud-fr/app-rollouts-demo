@@ -708,3 +708,7 @@ NAME                                      KIND        STATUS        AGE    INFO
    └──⧉ myapp-canary-6bb996f685           ReplicaSet  • ScaledDown  56m  
 ```  
 
+### Tester le canary
+
+Idem staging :
+* Url: http://myapp-bluegreen.k8s.ingcloud.site/
