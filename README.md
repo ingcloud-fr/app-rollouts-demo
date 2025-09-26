@@ -1,5 +1,7 @@
 # app-rollouts-demo
 
+* 2 ingress controlleur (prod et staging) dans 2 namespaces
+
 ## Installation 
 
 ```
@@ -109,10 +111,22 @@ kubectl argo rollouts dashboard -n argo-rollouts
 ### Tests
 
 ```
-# k -n ingress-nginx get svc
-NAME                                 TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)                      AGE
-ingress-nginx-controller             LoadBalancer   10.233.63.232   195.15.196.89   80:30643/TCP,443:30856/TCP   88s
-ingress-nginx-controller-admission   ClusterIP      10.233.53.197   <none>          443/TCP                      88s
+# k get ingressclasses
+NAME            CONTROLLER                      PARAMETERS   AGE
+nginx-prod      k8s.io/ingress-nginx            <none>       3m38s
+nginx-staging   k8s.io/ingress-nginx            <none>       3m38s
+
+
+# k get svc -n ingress-nginx-prod 
+NAME                                      TYPE           CLUSTER-IP     EXTERNAL-IP      PORT(S)                      AGE
+ingress-nginx-prod-controller             LoadBalancer   10.233.59.32   195.15.196.151   80:31193/TCP,443:31451/TCP   5m24s
+ingress-nginx-prod-controller-admission   ClusterIP      10.233.10.5    <none>           443/TCP                      5m24s
+
+# k get svc -n ingress-nginx-staging 
+NAME                                         TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)                      AGE
+ingress-nginx-staging-controller             LoadBalancer   10.233.9.103    195.15.197.215   80:30277/TCP,443:31486/TCP   5m33s
+ingress-nginx-staging-controller-admission   ClusterIP      10.233.44.113   <none>           443/TCP                      5m33s
+
 
 # k get ingress -A
 NAMESPACE                 NAME              CLASS   HOSTS                                           ADDRESS         PORTS   AGE

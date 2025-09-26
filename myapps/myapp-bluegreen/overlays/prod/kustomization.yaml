@@ -8,6 +8,7 @@ resources:
   - ../../base
   - namespace.yaml # Pour la création
 patches:
+  # Patch host dans active et preview
   - target:
       group: networking.k8s.io
       version: v1
@@ -26,4 +27,22 @@ patches:
       - op: replace
         path: /spec/rules/0/host
         value: myapp-bluegreen-preview.ingcloud.site
-
+  # Patch ingressClass pour ingressclass de prod dans active et preview
+  - target:
+      group: networking.k8s.io
+      version: v1
+      kind: Ingress
+      name: ingress-active
+    patch: |-
+      - op: replace
+        path: /spec/ingressClassName
+        value: nginx-prod  
+  - target:
+      group: networking.k8s.io
+      version: v1
+      kind: Ingress
+      name: ingress-preview
+    patch: |-
+      - op: replace
+        path: /spec/ingressClassName
+        value: nginx-prod          
