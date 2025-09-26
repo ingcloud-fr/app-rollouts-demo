@@ -3,4 +3,4 @@
   value: staging-myapp-canary.ingcloud.site
 - op: replace
   path: /spec/ingressClassName
-  value: ingress-staging  
+  value: nginx-staging  
