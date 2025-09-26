@@ -27,6 +27,8 @@ spec:
             enabled: true
             pathOverride: "ingress-nginx-prod/ingress-nginx-prod-controller"
           electionID: ingress-controller-leader-nginx-prod
+          extraArgs:
+            watch-namespace-selector: "env=prod"
           service:
             type: LoadBalancer
   destination:

@@ -27,6 +27,8 @@ spec:
             enabled: true
             pathOverride: "ingress-nginx-staging/ingress-nginx-staging-controller"
           electionID: ingress-controller-leader-nginx-staging
+          extraArgs:
+            watch-namespace-selector: "env=staging"          
           service:
             type: LoadBalancer
   destination:
