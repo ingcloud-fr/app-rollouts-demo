@@ -2,12 +2,103 @@
 
 ## Installation 
 
+```
+# git clone xxxx
+cd xxxx
+```
+
 ### Argocd
+
+On installe argocd via l'overlay (création du namespace, installation des CRDs, etc) avec patch service LB ;
+
+```
+# kubectl apply -k bootstrap/argocd/overlays/standard/
+```
+
+* Note: Si 3 workers ou plus, on peut installer la version HA (NOT READY)
+
+```
+# kubectl apply -k bootstrap/argocd/overlays/ha/
+```
+
+On récupère l'adresse IP :
+
+```
+# kubectl -n argocd get svc argocd-server
+```
+
+Faire l'entrée DNS.
+
+Récupèrer le mot de passe admin initial :
+
+```
+# kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d; echo
+```
 
 
 ## Argo CLI
 
-## Rollouts CLI
+On installe Argo CLI (sur poste client / master)
+
+* https://argo-cd.readthedocs.io/en/stable/cli_installation/
+
+Sur le poste client :
+
+```
+$ VERSION=$(curl -L -s https://raw.githubusercontent.com/argoproj/argo-cd/stable/VERSION) 
+$ curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/download/v$VERSION/argocd-linux-amd64 
+$ sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd 
+$ rm argocd-linux-amd64
+```
+Test :
+
+```
+$ argocd version --client
+argocd: v3.1.5+cfeed49
+  BuildDate: 2025-09-10T16:01:20Z
+  GitCommit: cfeed4910542c359f18537a6668d4671abd3813b
+  GitTreeState: clean
+  GoVersion: go1.24.6
+  Compiler: gc
+  Platform: linux/amd64
+```
+
+Pour récupérer l'IP + mot de passe
+
+```
+# kubectl -n argocd get svc argocd-server
+# kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d; echo
+```
+
+```
+$ argocd login <IP> --username admin --password '<PASSWD>' --insecure
+```
+
+Note: `--insecure` car certificat autosigné sinon avertissement
+
+
+
+## Rollouts CLI : plugin `kubectl-argo-rollouts`
+
+* Pratique pour suivre les déploiements blue/green & canary.
+* Pour la version : https://github.com/argoproj/argo-rollouts
+
+```bash
+# Linux amd64 — adapte l’OS/arch et <VERSION>
+curl -LO https://github.com/argoproj/argo-rollouts/releases/download/<VERSION>/kubectl-argo-rollouts-linux-amd64
+chmod +x kubectl-argo-rollouts-linux-amd64
+sudo mv kubectl-argo-rollouts-linux-amd64 /usr/local/bin/kubectl-argo-rollouts
+
+# Test
+kubectl argo rollouts version
+```
+
+Lancer le **dashboard** via le plugin (sans Helm) :
+
+```bash
+kubectl argo rollouts dashboard -n argo-rollouts
+```
+
 
 ## Lancement
 

@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+  - https://raw.githubusercontent.com/argoproj/argo-cd/v3.1.5/manifests/ha/install.yaml
+# Patch avec JSON  
+# patches:
+#   - target:
+#       version: v1
+#       kind: Service
+#       name: argocd-server
+#     patch: |-
+#       - op: replace
+#         path: /spec/type
+#         value: LoadBalancer
+#
+# Patch avec fichier
+patches:
+  - path: svc-argocd-server-patch.yaml
+    target:
+      group: ""
+      version: v1
+      kind: Service
+      name: argocd-server

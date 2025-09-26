@@ -13,5 +13,5 @@ patches:
       version: v1
       kind: Ingress
       name: ingress-stable
-    path: patch-ingress-host.yaml
+    path: patch-ingress-class-and-host.yaml
 

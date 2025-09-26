@@ -2,14 +2,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: ingress-nginx
+  name: ingress-nginx-prod
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "10"
   finalizers:
     - resources-finalizer.argocd.argoproj.io    
 spec:
-  project: default # project-infra #default
+  project: default # project-infra
   source:
     repoURL: https://kubernetes.github.io/ingress-nginx
     chart: ingress-nginx
@@ -18,8 +18,8 @@ spec:
       values: |
         controller:
           ingressClassResource:
-            name: nginx
-          ingressClass: nginx
+            name: nginx-prod
+          ingressClass: nginx-prod
           service:
             type: LoadBalancer
   destination:
@@ -30,4 +30,4 @@ spec:
       prune: true
       selfHeal: true
     syncOptions:
-      - CreateNamespace=true    # ← Argo CD créera le namespace
+      - CreateNamespace=true  
