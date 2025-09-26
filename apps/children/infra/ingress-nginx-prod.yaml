@@ -24,7 +24,7 @@ spec:
             type: LoadBalancer
   destination:
     server: https://kubernetes.default.svc
-    namespace: ingress-nginx
+    namespace: ingress-nginx-prod
   syncPolicy:
     automated:
       prune: true
