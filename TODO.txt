@@ -7,7 +7,7 @@ Il faudrait faire évoluer  :
 - Securiser l'acces à la GUI argocd (via IP source) / Ne pas avoir de IP LB, mais un Ingress sur ClusterIP
 - Avoir pour l'application canary staging une autre ip (c'est pour savoir comment on fait avec kustomize)
 - Avoir pour l'application canary prod une autre ip différente du staging (c'est pour savoir comment on fait avec kustomize)
-- Avoir des rollbacks automatisés avec métriques (prometheus)
+- Avoir des rollbacks automatisés avec métriques (prometheus) et tester avec une mauvaise image (bad-blue ou slow-green cf https://hub.docker.com/r/argoproj/rollouts-demo)
 - Rendre privé le repo github
 - Mettre un HPA et une diff customisation
 - Faire du mesh avec Istio (définir les buts, je ne comprends encore pas bien comment fonctonne et a quoi sert un service mesh)

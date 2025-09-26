@@ -441,9 +441,9 @@ On sync l'appli en staging (ou via la GUI ou on attend 3min) :
 # argocd app sync myapp-bluegreen-staging
 ```
 
-Le controlleur Argo Rollout détecte le changement d'image
-L'application de staging passe en `suspended/paused`
-L'app en preview est d'une autre couleur : http://staging-myapp-bluegreen-preview.ingcloud.site/
+* Le controlleur Argo Rollout détecte le changement d'image
+* L'application de staging passe en `suspended/paused`
+* L'app en preview est d'une autre couleur : http://staging-myapp-bluegreen-preview.k8s.ingcloud.site/
 
 
 On a une stratégie rollout manuelle (cf `myapps/myapp-bluegreen/base/rollout.yaml`) avec `autoPromotionEnabled: false` et 2 replicas pour la preview :
@@ -482,13 +482,10 @@ NAME                                         KIND        STATUS     AGE    INFO
 
 #### Promouvoir le preview :
 
-
 ```
 # kubectl argo rollouts promote myapp-bluegreen -n myapp-bluegreen-staging
 rollout 'myapp-bluegreen' promoted
 ```
-
-
 
 Au bout de 30 sec :
 
@@ -544,7 +541,14 @@ Il vaut mieux modifier l'image dans Git + COMMIT + PUSH + APP SYNC
 
 #### Tester le blue-green en prod
 
-Idem staging
+Idem staging avec urls :
+
+* http://myapp-bluegreen.k8s.ingcloud.site/
+* http://staging-myapp-bluegreen.ingcloud.site/
+* Modif de `myapps/myapp-bluegreen/overlays/prod/kustomization.yaml` (`image.newTag`)
+
+
+
 
 
 ### Tester le canary en staging
