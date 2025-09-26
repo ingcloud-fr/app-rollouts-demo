@@ -548,37 +548,35 @@ Idem staging avec urls :
 * Modif de `myapps/myapp-bluegreen/overlays/prod/kustomization.yaml` (`image.newTag`)
 * `# argocd app sync myapp-bluegreen-prod`
 * Voir le rollout : `# kubectl argo rollouts get rollout myapp-bluegreen -n myapp-bluegreen-prod`
-* `# kubectl argo rollouts promote myapp-bluegreen -n myapp-bluegreen-prod`
-
-
-
+* Promote preview : `# kubectl argo rollouts promote myapp-bluegreen -n myapp-bluegreen-prod`
 
 
 ### Tester le canary en staging
 
 ```
 # k get ingress -n myapp-canary-staging
-NAME                                 CLASS   HOSTS                                ADDRESS         PORTS   AGE
-ingress-stable                       nginx   staging-myapp-canary.ingcloud.site   195.15.196.89   80      25m
-myapp-canary-ingress-stable-canary   nginx   staging-myapp-canary.ingcloud.site   195.15.196.89   80      25m
+NAME                                 CLASS           HOSTS                                    ADDRESS         PORTS   AGE
+ingress-stable                       nginx-staging   staging-myapp-canary.k8s.ingcloud.site   195.15.199.45   80      3h30m
+myapp-canary-ingress-stable-canary   nginx-staging   staging-myapp-canary.k8s.ingcloud.site   195.15.199.45   80      3h28m
 ```
 
 Notes : 
 * Il est normal d’avoir 2 Ingress avec le même host en stratégie canary avec NGINX avec même règle/path. Le pattern standard est : un Ingress “stable” + un Ingress “canary” (même host), et NGINX route une fraction du trafic vers le canary en fonction des annotations.
 * L'ingress `myapp-canary-ingress-stable-canary` est automatiquement crée par argocd rollouts
 
-On peut voir les annotations :
+On peut voir les annotations des ingress :
 
 ```
 # kubectl -n myapp-canary-staging describe ing ingress-stable
 Name:             ingress-stable
 ...
 Rules:
-  Host                                Path  Backends
-  ----                                ----  --------
-  staging-myapp-canary.ingcloud.site  
-                                      /   svc-stable:80 (10.233.66.19:8080,10.233.66.221:8080,10.233.66.27:8080 + 3 more...)
-Annotations:                          argocd.argoproj.io/tracking-id: myapp-canary-staging:networking.k8s.io/Ingress:myapp-canary-staging/ingress-stable
+  Host                                    Path  Backends
+  ----                                    ----  --------
+  staging-myapp-canary.k8s.ingcloud.site  
+                                          /   svc-stable:80 (10.233.66.26:8080,10.233.66.128:8080,10.233.66.232:8080 + 3 more...)
+Annotations:                              argocd.argoproj.io/tracking-id: myapp-canary-staging:networking.k8s.io/Ingress:myapp-canary-staging/ingress-stable
+
 ...
 ```
 
@@ -587,18 +585,17 @@ Annotations:                          argocd.argoproj.io/tracking-id: myapp-cana
 Name:             myapp-canary-ingress-stable-canary
 ...
 Rules:
-  Host                                Path  Backends
-  ----                                ----  --------
-  staging-myapp-canary.ingcloud.site  
-                                      /   svc-canary:80 (10.233.66.19:8080,10.233.66.221:8080,10.233.66.27:8080 + 3 more...)
-Annotations:                          nginx.ingress.kubernetes.io/canary: true
-                                      nginx.ingress.kubernetes.io/canary-weight: 0
+  Host                                    Path  Backends
+  ----                                    ----  --------
+  staging-myapp-canary.k8s.ingcloud.site  
+                                          /   svc-canary:80 (10.233.66.26:8080,10.233.66.128:8080,10.233.66.232:8080 + 3 more...)
+Annotations:                              nginx.ingress.kubernetes.io/canary: true
+                                          nginx.ingress.kubernetes.io/canary-weight: 0
 ...
 ```
 
-On fait l'entrée DNS : staging-myapp-canary.ingcloud.site CNAME de vip1
 
-Si on va sur http://staging-myapp-canary.ingcloud.site est est à 100% d'une couleur
+Si on va sur http://staging-myapp-canary.k8s.ingcloud.site est est à 100% d'une couleur
 
 On change l'image dans `myapps/myapp-canary/overlays/staging/kustomization.yaml` (dans `image.newTag`)
 
