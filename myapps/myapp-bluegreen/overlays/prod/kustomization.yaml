@@ -1,6 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: myapp-blue-green-prod
+namespace: myapp-bluegreen-prod
 images:
 - name: argoproj/rollouts-demo
   newTag: green
