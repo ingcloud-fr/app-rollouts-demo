@@ -19,7 +19,14 @@ spec:
         controller:
           ingressClassResource:
             name: nginx-staging
+            controllerValue: "k8s.io/ingress-nginx"
           ingressClass: nginx-staging
+          ingressClassByName: true
+          watchIngressWithoutClass: false
+          publishService:
+            enabled: true
+            pathOverride: "ingress-nginx-staging/ingress-nginx-staging-controller"
+          electionID: ingress-controller-leader-nginx-staging
           service:
             type: LoadBalancer
   destination:

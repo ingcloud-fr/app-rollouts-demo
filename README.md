@@ -108,7 +108,7 @@ kubectl argo rollouts dashboard -n argo-rollouts
 # kubectl apply -f apps/root-apps.yaml
 ```
 
-### Tests
+### Tests Ingess
 
 ```
 # k get ingressclasses

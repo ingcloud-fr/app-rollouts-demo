@@ -19,7 +19,14 @@ spec:
         controller:
           ingressClassResource:
             name: nginx-prod
+            controllerValue: "k8s.io/ingress-nginx"
           ingressClass: nginx-prod
+          ingressClassByName: true
+          watchIngressWithoutClass: false
+          publishService:
+            enabled: true
+            pathOverride: "ingress-nginx-prod/ingress-nginx-prod-controller"
+          electionID: ingress-controller-leader-nginx-prod
           service:
             type: LoadBalancer
   destination:
