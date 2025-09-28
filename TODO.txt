@@ -1,7 +1,7 @@
 Il faudrait faire évoluer  :
 
-- Bootstrap de argocd (là on l'a installé à la main) -> Fait
-- Ajout de l'application argocd selfmanager dans git -> Fait
+- Bootstrap de argocd (là on l'a installé à la main) -> Fait (non testé)
+- Ajout de l'application argocd selfmanager dans git -> Fait (non testé)
 - Ajouter des projets (appProject) : https://blog.stackademic.com/scalable-gitops-a-deep-dive-into-multi-project-setup-in-argo-cd-19c5475daad4
 - Ajout de cert-manager pour acceder aux applications en HTTPS
 - Securiser l'acces à la GUI argocd (via IP source) / Ne pas avoir de IP LB, mais un Ingress sur ClusterIP
@@ -9,6 +9,7 @@ Il faudrait faire évoluer  :
 - Avoir pour l'application canary prod une autre ip différente du staging (c'est pour savoir comment on fait avec kustomize)
 - Avoir des rollbacks automatisés avec métriques (prometheus) et tester avec une mauvaise image (bad-blue ou slow-green cf https://hub.docker.com/r/argoproj/rollouts-demo)
 - Rendre privé le repo github
+- Utilisationde Harshicop Vault pour les secrets
 - Mettre un HPA et une diff customisation
 - Faire du mesh avec Istio (définir les buts, je ne comprends encore pas bien comment fonctonne et a quoi sert un service mesh)
 - Sécuriser l'accès à l'API K8s (c'est une IP publique sur le LB)

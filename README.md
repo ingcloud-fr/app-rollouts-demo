@@ -73,7 +73,7 @@ Pour récupérer l'IP + mot de passe
 ```
 
 ```
-$ argocd login <IP> --username admin --password '<PASSWD>' --insecure
+$ argocd login <IP_LB> --username admin --password '<PASSWD>' --insecure
 ```
 
 Note: `--insecure` car certificat autosigné sinon avertissement
@@ -194,7 +194,7 @@ stringData:
   OS_AUTH_URL: "https://api.pub1.infomaniak.cloud/identity/v3"
   OS_REGION_NAME: "dc3-a"
   OS_USERNAME: "PCU-xxxx"
-  OS_PASSWORD: "<ton_mot_de_passe>"
+  OS_PASSWORD: "<mot_de_passe>"
   OS_PROJECT_NAME: "PCP-xxxx"
   OS_PROJECT_ID: "xxxxxxx"
   OS_USER_DOMAIN_NAME: "default"
@@ -712,3 +712,6 @@ NAME                                      KIND        STATUS        AGE    INFO
 
 Idem staging :
 * Url: http://myapp-bluegreen.k8s.ingcloud.site/
+* Changement image dans `myapps/myapp-canary/overlays/prod/kustomization.yaml` + COMMIT + PUSH 
+* `# k argo rollouts get rollout myapp-canary -n myapp-canary-prod`
+* Promouvoir : `# k argo rollouts promote myapp-canary -n myapp-canary-prod`

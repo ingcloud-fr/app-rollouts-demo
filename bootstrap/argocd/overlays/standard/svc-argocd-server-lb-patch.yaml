@@ -5,3 +5,8 @@ metadata:
   namespace: argocd
 spec:
   type: LoadBalancer
+  loadBalancerSourceRanges:
+  - 31.36.121.222/32
+  - 10.0.0.0/24
+  - 10.233.0.0/16
+  - 195.15.198.115/32
