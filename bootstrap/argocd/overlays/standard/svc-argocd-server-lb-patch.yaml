@@ -5,6 +5,7 @@ metadata:
   namespace: argocd
 spec:
   type: LoadBalancer
+  externalTrafficPolicy: Local
   loadBalancerSourceRanges:
   - 31.36.121.222/32
   - 10.0.0.0/24

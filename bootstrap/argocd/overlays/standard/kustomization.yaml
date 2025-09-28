@@ -19,7 +19,6 @@ resources:
 patches:
   - path: svc-argocd-server-lb-patch.yaml        # type: LoadBalancer
     # target:
-    #   group: ""
     #   version: v1
     #   kind: Service
     #   name: argocd-server

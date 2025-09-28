@@ -6,6 +6,7 @@ metadata:
   annotations:
     # utile quand des CRDs apparaissent pendant le sync initial
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "-10"
 spec:
   project: default
   source:
@@ -22,3 +23,4 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+      #- PrunePropagationPolicy=foreground
