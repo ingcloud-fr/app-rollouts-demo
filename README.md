@@ -17,7 +17,7 @@ On installe argocd via l'overlay (création du namespace, installation des CRDs,
 # kubectl apply -k bootstrap/argocd/overlays/standard/
 ```
 
-* Note: Si 3 workers ou plus, on peut installer la version HA (NOT READY)
+* Note: Si 3 workers ou plus, on peut installer la version HA (NOT READY) :
 
 ```
 # kubectl apply -k bootstrap/argocd/overlays/ha/
@@ -31,6 +31,23 @@ On récupère l'adresse IP :
 
 Faire l'entrée DNS.
 
+On vérifie les adresses ip autorisées :
+
+```
+# k -n argocd get svc argocd-server -o jsonpath='{.spec.loadBalancerSourceRanges}' | jq .
+[
+  "31.36.121.222/32",
+  "10.0.0.0/24",
+  "10.233.0.0/16",
+  "195.15.198.115/32"
+]
+```
+
+Note: `195.15.198.115/32` est l'adresse natée en sortie du routeur openstack. Pour l'obtenir :
+
+```
+curl -4 -s https://api.ipify.org; echo
+```
 Récupèrer le mot de passe admin initial :
 
 ```
@@ -72,13 +89,19 @@ Pour récupérer l'IP + mot de passe
 # kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d; echo
 ```
 
+Se connecter via le LB (l'ip source doit être autorisée)
+
 ```
 $ argocd login <IP_LB> --username admin --password '<PASSWD>' --insecure
 ```
 
+Ou en interne :
+
+```
+# argocd login argocd-server.argocd.svc.cluster.local:443 --username admin --password '<PASSWD>' --insecure
+```
+
 Note: `--insecure` car certificat autosigné sinon avertissement
-
-
 
 ## Rollouts CLI : plugin `kubectl-argo-rollouts`
 
@@ -116,7 +139,7 @@ $ sudo apt install python3-designate
 * Créer une zone k8s.ingcloud.site avec la GUI ou en ligne de commande (ne pas oublier le . à la fin du domaine):
 
 ```
-$ openstack zone create --email hostmaster@ingcloud.site k8s.ingcloud.site.
+$ openstack zone create --email hostmaster@ingcloud.site --ttl 360 k8s.ingcloud.site.
 +----------------+--------------------------------------+
 | Field          | Value                                |
 +----------------+--------------------------------------+
@@ -140,6 +163,8 @@ $ openstack zone create --email hostmaster@ingcloud.site k8s.ingcloud.site.
 +----------------+--------------------------------------+
 
 ```
+
+* Note: TTL court pour les tests. Possibilité de mettre une annotatopns dans les ingress plus tard
 
 On récupère le NS de la zone créée :
 
